@@ -9,7 +9,7 @@ import { faCheckCircle, faEnvelope, faTimes } from '@fortawesome/free-solid-svg-
 // We now use a sessionStorage key. The data will be cleared when the tab is closed or refreshed.
 const NEWSLETTER_MODAL_SEEN_KEY = 'hasSeenNewsletterModalInSession';
 const MODAL_APPEAR_DELAY = 5000; // 3 seconds
-const MODAL_IMAGE_URL = 'https://res.cloudinary.com/dlw562sfr/image/upload/f_auto,q_auto/v1/samples/food/salad';
+const MODAL_IMAGE_URL = 'https://plus.unsplash.com/premium_photo-1666353535582-9268ce1a981c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm9vZCUyMGJhbm5lcnxlbnwwfHwwfHx8MA%3D%3D';
 
 const NewsletterModal = () => {
     // --- State Management (no changes needed) ---
