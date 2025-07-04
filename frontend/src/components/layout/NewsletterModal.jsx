@@ -8,7 +8,7 @@ import { faCheckCircle, faEnvelope, faTimes } from '@fortawesome/free-solid-svg-
 // --- Configuration Constants ---
 // We now use a sessionStorage key. The data will be cleared when the tab is closed or refreshed.
 const NEWSLETTER_MODAL_SEEN_KEY = 'hasSeenNewsletterModalInSession';
-const MODAL_APPEAR_DELAY = 5000; // 3 seconds
+const MODAL_APPEAR_DELAY = 20000; // 3 seconds
 const MODAL_IMAGE_URL = 'https://plus.unsplash.com/premium_photo-1666353535582-9268ce1a981c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm9vZCUyMGJhbm5lcnxlbnwwfHwwfHx8MA%3D%3D';
 
 const NewsletterModal = () => {
@@ -22,7 +22,7 @@ const NewsletterModal = () => {
     // === Effect to control modal visibility using sessionStorage ===
     useEffect(() => {
         // Don't show on admin routes
-        if (location.pathname.startsWith('/admin')) {
+        if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/print') || location.pathname.startsWith('/unsubscribe')) {
             setIsOpen(false);
             return;
         }

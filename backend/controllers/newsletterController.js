@@ -60,15 +60,13 @@ const sendNewsletter = asyncHandler(async (req, res) => {
 
     for (const email of subscriberEmails) {
         const name = userMap.get(email);
-        // Use "Food Lover" as a friendly fallback for subscribers who aren't registered users
         const firstName = name ? name.split(' ')[0] : 'Food Lover';
 
-        // --- THE KEY CHANGE IS HERE ---
-        // 2. Create the full, styled HTML using our template function
         const finalHtml = createNewsletterHtml({
             recipientName: firstName,
             subject: subject,
-            htmlContent: htmlContent, // This is the content from the admin's TipTap editor
+            htmlContent: htmlContent,
+            recipientEmail: email, // <-- Pass the recipient's email to the template
         });
 
         // 3. Send the complete HTML in the email
@@ -95,7 +93,31 @@ const sendNewsletter = asyncHandler(async (req, res) => {
     }
 });
 
+const unsubscribeFromNewsletter = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        res.status(400);
+        throw new Error('Email address is required to unsubscribe.');
+    }
+
+    // Find and delete the subscription from the Newsletter collection
+    const subscription = await Newsletter.findOneAndDelete({ email: email.toLowerCase() });
+
+    // Also, find the corresponding user (if they exist) and set their newsletter flag to false
+    await User.updateOne({ email: email.toLowerCase() }, { $set: { newsletter: false } });
+
+    if (!subscription) {
+        // Even if they weren't in the list, send a success message.
+        // This prevents people from checking if an email is in your database.
+        return res.status(200).json({ message: "You have been successfully unsubscribed." });
+    }
+
+    res.status(200).json({ message: "You have been successfully unsubscribed." });
+});
+
 module.exports = {
     subscribeToNewsletter,
-    sendNewsletter
+    sendNewsletter,
+    unsubscribeFromNewsletter
 };

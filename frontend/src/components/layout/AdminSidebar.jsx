@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTachometerAlt, faPaperPlane, faBookOpen, faTag, faQuestionCircle, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTachometerAlt, faPaperPlane, faBookOpen, faTag, faQuestionCircle, faSignOutAlt, faComments } from '@fortawesome/free-solid-svg-icons';
 
 const AdminSidebar = () => {
     const commonClasses = "flex items-center p-3 my-1 rounded-lg text-gray-200 hover:bg-gray-700 transition-colors";
@@ -23,6 +23,9 @@ const AdminSidebar = () => {
                 </NavLink>
                 <NavLink to="/admin/faqs" className={({ isActive }) => `${commonClasses} ${isActive ? activeClassName : ''}`}>
                     <FontAwesomeIcon icon={faQuestionCircle} className="mr-3" /> FAQs
+                </NavLink>
+                <NavLink to="/admin/comments" className={({ isActive }) => `${commonClasses} ${isActive ? activeClassName : ''}`}>
+                    <FontAwesomeIcon icon={faComments} className="mr-3 w-5" /> Comments
                 </NavLink>
                 <NavLink to="/admin/newsletter" className={({ isActive }) => `${commonClasses} ${isActive ? activeClassName : ''}`}>
                     <FontAwesomeIcon icon={faPaperPlane} className="mr-3 w-5" /> Newsletter

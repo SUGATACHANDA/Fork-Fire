@@ -18,6 +18,7 @@ const recipeSchema = mongoose.Schema({
     category: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Category' },
     author: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
     faqs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Faq' }],
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]
 }, { timestamps: true });
 
 const Recipe = mongoose.model('Recipe', recipeSchema);

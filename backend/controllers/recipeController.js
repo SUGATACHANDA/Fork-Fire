@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Recipe = require('../models/recipeModel.js');
 const User = require('../models/userModel.js');
+const Comment = require('../models/commentModel.js')
 
 // @desc    Fetch all recipes
 const getRecipes = asyncHandler(async (req, res) => {
@@ -26,20 +27,33 @@ const getRecipes = asyncHandler(async (req, res) => {
 
 // @desc    Fetch single recipe
 const getRecipeById = asyncHandler(async (req, res) => {
+    // 1. Fetch the recipe and populate its primary related data
     const recipe = await Recipe.findById(req.params.id)
         .populate('category', 'name')
         .populate('author', 'name')
         .populate('faqs');
+
     if (recipe) {
-        const favoriteCount = await User.countDocuments({ favorites: req.params.id });
+        // 2. Perform two separate, efficient counts for favorites and comments.
+        const [favoriteCount, commentCount] = await Promise.all([
+            User.countDocuments({ favorites: req.params.id }),
+            Comment.countDocuments({ recipe: req.params.id }) // Count comments for this recipe
+        ]);
+
+        // 3. Convert to a plain object to add new properties
         const recipeObject = recipe.toObject();
+
+        // 4. Attach the counts to the object
         recipeObject.favoriteCount = favoriteCount;
+        recipeObject.commentCount = commentCount; // <-- Attach the new comment count
+
         res.json(recipeObject);
     } else {
         res.status(404);
         throw new Error('Recipe not found');
     }
 });
+
 
 // @desc    Delete a recipe
 const deleteRecipe = asyncHandler(async (req, res) => {

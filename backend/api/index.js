@@ -12,6 +12,8 @@ const recipeRoutes = require('../routes/recipeRoutes');
 const faqRoutes = require('../routes/faqRoutes');
 const dashboardRoutes = require('../routes/dashboardRoutes.js');
 const newsletterRoutes = require('../routes/newsletterRoutes');
+const commentRoutes = require('../routes/commentRoutes.js');
+
 
 // Initial Setup
 dotenv.config();
@@ -34,6 +36,7 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/faqs', faqRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/comments', commentRoutes);
 
 
 // Make uploads folder static

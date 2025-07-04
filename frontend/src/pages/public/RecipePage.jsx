@@ -1,26 +1,28 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
+import { Link as ScrollLink } from 'react-scroll';
 import YouTube from "react-youtube";
 import API from "../../api/index";
 import { useAuth } from "../../hooks/useAuth";
 import FaqAccordion from "../../components/recipe/FaqAccordion";
 import Loader from "../../components/common/Loader";
+import RelatedRecipes from "../../components/recipe/RelatedRecipes";
+import CommentSection from "../../components/recipe/CommentSection";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faClock,
   faUtensils,
   faHeart as faHeartSolid,
   faBookmark,
+  faCommentDots,
+  faPrint,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import RelatedRecipes from "../../components/recipe/RelatedRecipes";
 
-// Register the GSAP plugin once
 gsap.registerPlugin(ScrollTrigger);
 
-// Robust helper function to extract YouTube video ID
 const getYouTubeId = (url) => {
   if (!url || typeof url !== 'string') return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -44,37 +46,35 @@ const RecipePage = () => {
   const mainRef = useRef(null);
   const isFavorite = userInfo ? favorites.includes(id) : false;
 
-  // === Data Fetching Effect (with cleanup) ===
+  // === Data Fetching Effect ===
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-
     const fetchRecipe = async () => {
       setLoading(true);
       setError(null);
       try {
-        window.scrollTo(0, 0); // Always start at the top on new page load
+        window.scrollTo(0, 0);
         const { data } = await API.get(`/api/recipes/${id}`, { signal });
         setRecipe(data);
         setLocalFavoriteCount(data.favoriteCount || 0);
       } catch (err) {
         if (err.name !== 'CanceledError') {
-          setError("Could not load the recipe. It may have been removed or a network error occurred.");
+          setError("Could not load this recipe. It may have been removed or the URL is incorrect.");
         }
       } finally {
         if (!signal.aborted) setLoading(false);
       }
     };
     fetchRecipe();
-
     return () => controller.abort();
-  }, [id]); // This effect re-runs whenever the `id` from the URL changes
+  }, [id]);
 
-  // === Animation Effect (Robust Version) ===
+  // === Animation Effect ===
   useEffect(() => {
     if (!loading && recipe) {
       const ctx = gsap.context(() => {
-        gsap.fromTo(".anim-on-load", { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.15, duration: 0.8, ease: "power3.out", delay: 0.2 });
+        gsap.fromTo(".anim-on-load", { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.1, duration: 0.8, ease: "power3.out", delay: 0.2 });
         gsap.utils.toArray(".anim-on-scroll").forEach((element) => {
           gsap.fromTo(element, { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: element, start: "top 85%" } });
         });
@@ -109,32 +109,32 @@ const RecipePage = () => {
   if (error) return <div className="min-h-screen flex items-center justify-center text-center text-red-500 bg-red-50 p-8">{error}</div>;
   if (!recipe) return <div className="min-h-screen flex items-center justify-center text-center text-secondary-text">Recipe not found.</div>;
 
-  // --- Safe Data Destructuring & URL Handling ---
-  const { title, category, author, prepTime, cookTime, servings, description, ingredients, steps, faqs, mainImage, youtubeUrl } = recipe;
+  const { title, category, author, prepTime, cookTime, servings, description, ingredients, steps, faqs, mainImage, youtubeUrl, commentCount } = recipe;
   const imageUrl = mainImage;
   const videoId = getYouTubeId(youtubeUrl);
 
+  document.title = `${title} - Fork & Fire`
+
   return (
     <div ref={mainRef} className="max-w-7xl mx-auto py-16 px-4 md:px-8">
-      {/* Header */}
       <header className="text-center mb-12 anim-on-load">
         <p className="font-bold uppercase tracking-widest text-accent">{category?.name || "Uncategorized"}</p>
         <h1 className="text-4xl md:text-6xl font-serif font-bold my-4 text-primary-text">{title || "Untitled Recipe"}</h1>
         <p className="text-lg text-secondary-text">By <span className="font-semibold text-primary-text">{author?.name || "Anonymous"}</span></p>
       </header>
 
-      {/* Main Image */}
       {imageUrl && <img src={imageUrl} alt={title} className="anim-on-load w-full h-[60vh] object-cover rounded-2xl shadow-xl mb-12" />}
 
-      {/* Meta Info Bar */}
       <div className="anim-on-load flex flex-wrap justify-center items-center gap-x-8 gap-y-4 bg-accent-light p-6 rounded-xl mb-12 text-center text-primary-text">
         <div className="flex items-center gap-3"><FontAwesomeIcon icon={faClock} className="text-accent text-2xl" /><div><h3 className="font-bold text-sm uppercase">Prep Time</h3><p>{prepTime || 'N/A'}</p></div></div>
         <div className="flex items-center gap-3"><FontAwesomeIcon icon={faClock} className="text-accent text-2xl" /><div><h3 className="font-bold text-sm uppercase">Cook Time</h3><p>{cookTime || 'N/A'}</p></div></div>
         <div className="flex items-center gap-3"><FontAwesomeIcon icon={faUtensils} className="text-accent text-2xl" /><div><h3 className="font-bold text-sm uppercase">Servings</h3><p>{servings || 'N/A'}</p></div></div>
+        <ScrollLink to="comment-section" spy={true} smooth={true} offset={-100} duration={800} className="flex items-center gap-3 cursor-pointer">
+          <FontAwesomeIcon icon={faCommentDots} className="text-accent text-2xl" /><div><h3 className="font-bold text-sm uppercase">Discussion</h3><p>{commentCount || 0}</p></div>
+        </ScrollLink>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-8">
-        {/* Ingredients Aside */}
         <aside className="lg:col-span-1 lg:order-last">
           <div className="anim-on-scroll bg-white p-8 rounded-lg shadow-md sticky top-28">
             <h2 className="text-3xl font-serif mb-4 text-primary-text">Ingredients</h2>
@@ -147,10 +147,18 @@ const RecipePage = () => {
               <FontAwesomeIcon icon={faBookmark} />
               <span>Saved by <span className="font-bold text-primary-text">{localFavoriteCount}</span> other food lovers</span>
             </div>
+            <Link
+              to={`/print/recipe/${id}`}
+              target="_blank" // Opens the print preview in a new tab for better UX
+              rel="noopener noreferrer"
+              className="w-full mt-4 bg-gray-100 text-primary-text font-semibold py-2.5 px-5 rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+            >
+              <FontAwesomeIcon icon={faPrint} />
+              <span>Print Recipe</span>
+            </Link>
           </div>
         </aside>
 
-        {/* Instructions */}
         <div className="lg:col-span-2">
           <p className="anim-on-load text-lg text-secondary-text mb-12 leading-loose">{description || "No description provided."}</p>
           <div>
@@ -168,39 +176,16 @@ const RecipePage = () => {
         </div>
       </div>
 
-      {/* Video and FAQs Section */}
       {(videoId || (faqs && faqs.length > 0)) && (
         <section className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12">
-          {videoId && (
-            <div className="anim-on-scroll">
-              <h2 className="text-3xl font-serif mb-6 text-primary-text">Watch The Tutorial</h2>
-              <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-xl bg-black">
-                <YouTube videoId={videoId} onReady={onPlayerReady} opts={{ width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1 } }} />
-              </div>
-            </div>
-          )}
-          {faqs && faqs.length > 0 && (
-            <div className="anim-on-scroll">
-              <h2 className="text-3xl font-serif mb-6 text-primary-text">Recipe Q&A</h2>
-              <div className="space-y-2">
-                {faqs.map((faq) => faq?._id && (<FaqAccordion key={faq._id} title={faq.question} content={faq.answer} />))}
-              </div>
-            </div>
-          )}
+          {videoId && (<div className="anim-on-scroll"><h2 className="text-3xl font-serif mb-6 text-primary-text">Watch The Tutorial</h2><div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-xl bg-black"><YouTube videoId={videoId} onReady={onPlayerReady} opts={{ width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1 } }} /></div></div>)}
+          {faqs && faqs.length > 0 && (<div className="anim-on-scroll"><h2 className="text-3xl font-serif mb-6 text-primary-text">Recipe Q&A</h2><div className="space-y-2">{faqs.map((faq) => faq?._id && (<FaqAccordion key={faq._id} title={faq.question} content={faq.answer} />))}</div></div>)}
         </section>
       )}
 
-      {/* --- New Related Recipes Section --- */}
-      <div className="mt-24">
-        {category?._id && (
-          <RelatedRecipes
-            key={id}
-            categoryId={category._id}
-            currentRecipeId={id}
-          />
-        )}
-      </div>
+      <div className="mt-16"><RelatedRecipes categoryId={category?._id} currentRecipeId={id} key={id} /></div>
 
+      <div id="comment-section"><CommentSection recipeId={id} initialCommentCount={commentCount || 0} /></div>
     </div>
   );
 };

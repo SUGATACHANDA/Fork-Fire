@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
 // Import Layouts
@@ -12,6 +12,7 @@ import RecipePage from './pages/public/RecipePage';
 import AllRecipesPage from './pages/public/AllRecipesPage';
 import LoginPage from './pages/public/LoginPage';
 import SignupPage from './pages/public/SignupPage';
+import UnsubscribePage from './pages/public/UnsubscribePage';
 
 // Import Private/User Pages
 import FavoritesPage from './pages/user/FavouritesPage';
@@ -30,7 +31,14 @@ import PrivateRoute from './routes/PrivateRoute';
 import AdminRoute from './routes/AdminRoute';
 import NewsletterModal from './components/layout/NewsletterModal';
 import CookieConsent from "./components/layout/CookieConsent"
-import Preloader from './components/layout/Preloader';
+
+import NotFoundPage from './pages/public/NotFoundPage';
+import SubscribePage from './pages/public/SubscribePage';
+import BackToTopButton from './components/common/BackToTopButton';
+import ScrollToTop from './components/common/ScrollToTop';
+import NotificationBanner from './components/common/NotificationBanner';
+import ManageCommentsPage from './pages/admin/ManageCommentsPage';
+import PrintRecipePage from './pages/public/PrintRecipePage';
 
 function App() {
   // No more `useLocation` or conditional logic for header/footer here!
@@ -48,6 +56,7 @@ function App() {
     }
   }, []);
 
+
   // This function will be called by the Preloader when its animation finishes
   const handleLoadingComplete = () => {
     sessionStorage.setItem('preloader_complete', 'true');
@@ -56,58 +65,53 @@ function App() {
 
   return (
     <>
-      <AnimatePresence>
-        {isLoading ? (
-          <Preloader onComplete={handleLoadingComplete} />
-        ) : (
-          <motion.div
-            key="main-app"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <NewsletterModal />
-            <CookieConsent />
-            <Routes>
-              {/* --- Public Routes: All nested routes will have the PublicLayout --- */}
-              <Route path="/" element={<PublicLayout />}>
-                <Route index element={<HomePage />} />
-                <Route path="recipes" element={<AllRecipesPage />} />
-                <Route path="recipe/:id" element={<RecipePage />} />
+      <NewsletterModal />
+      <CookieConsent />
+      <BackToTopButton />
+      <ScrollToTop />
+      {/* <NotificationBanner /> */}
+      <Routes>
+        {/* --- Public Routes: All nested routes will have the PublicLayout --- */}
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="recipes" element={<AllRecipesPage />} />
+          <Route path="recipe/:id" element={<RecipePage />} />
+          <Route path='*' element={<NotFoundPage />} />
+          <Route path="/subscribe" element={<SubscribePage />} />
 
-                {/* Private user routes can also share the public layout */}
-                <Route path="" element={<PrivateRoute />}>
-                  <Route path="favorites" element={<FavoritesPage />} />
-                </Route>
-              </Route>
+          {/* Private user routes can also share the public layout */}
+          <Route path="" element={<PrivateRoute />}>
+            <Route path="favorites" element={<FavoritesPage />} />
+          </Route>
+        </Route>
 
-              {/* --- Standalone Auth Routes (they don't need a header/footer) --- */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
+        {/* --- Standalone Auth Routes (they don't need a header/footer) --- */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/unsubscribe" element={<UnsubscribePage />} />
+        <Route path="/print/recipe/:id" element={<PrintRecipePage />} />
 
-              {/* --- Admin Routes: All nested admin routes will have the AdminLayout --- */}
-              <Route path="/admin" element={<AdminRoute />}>
-                <Route path="" element={<AdminLayout />}>
-                  {/* The index route automatically redirects /admin to /admin/dashboard */}
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="recipes" element={<ManageRecipes />} />
-                  <Route path="recipes/new" element={<RecipeForm />} />
-                  <Route path="recipes/edit/:id" element={<RecipeForm />} />
-                  <Route path="categories" element={<ManageCategories />} />
-                  <Route path="faqs" element={<ManageFaqs />} />
-                  <Route path="newsletter" element={<SendNewsletterPage />} />
-                </Route>
-              </Route>
+        {/* --- Admin Routes: All nested admin routes will have the AdminLayout --- */}
+        <Route path="/admin" element={<AdminRoute />}>
+          <Route path="" element={<AdminLayout />}>
+            {/* The index route automatically redirects /admin to /admin/dashboard */}
+            <Route index element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="recipes" element={<ManageRecipes />} />
+            <Route path="recipes/new" element={<RecipeForm />} />
+            <Route path="recipes/edit/:id" element={<RecipeForm />} />
+            <Route path="categories" element={<ManageCategories />} />
+            <Route path="faqs" element={<ManageFaqs />} />
+            <Route path="newsletter" element={<SendNewsletterPage />} />
+            <Route path="comments" element={<ManageCommentsPage />} />
+            <Route path='*' element={<NotFoundPage />} />
+          </Route>
+        </Route>
 
-              {/* You can add a 404 Not Found page here */}
-              {/* <Route path="*" element={<NotFoundPage />} /> */}
+        {/* You can add a 404 Not Found page here */}
+        {/* <Route path="*" element={<NotFoundPage />} /> */}
 
-            </Routes>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </Routes>
     </>
   );
 }

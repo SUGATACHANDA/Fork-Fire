@@ -5,8 +5,9 @@ import RecipeCard from '../../components/recipe/RecipeCard';
 import Loader from '../../components/common/Loader';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
-import noResultsImage from '../../assets/images/no-results.svg';
+import noResultsImage from '../../assets/images/no-results.png';
 import clsx from 'clsx'; // <-- Import the clsx utility
+import Preloader from '../../components/layout/Preloader';
 
 const AllRecipesPage = () => {
     // --- State Management & Hooks (No changes needed here) ---
@@ -99,6 +100,7 @@ const AllRecipesPage = () => {
 
     // --- Derived state to check if any filter is active ---
     const isFilterActive = !!searchTerm || !!selectedCategory;
+    document.title = "Search from a vast sea of recipes created with love - Fork & Fire"
 
     return (
         <div className="bg-background">
@@ -172,7 +174,9 @@ const AllRecipesPage = () => {
                 <main>
                     {/* Main Content Grid (no changes needed) */}
                     {loading ? (
-                        <div className="flex justify-center pt-20"><Loader /></div>
+                        <div className="min-h-screen">
+                            <Preloader fullScreen={true} />
+                        </div>
                     ) : error ? (
                         <div className="text-center py-20 text-red-500">{error}</div>
                     ) : (
